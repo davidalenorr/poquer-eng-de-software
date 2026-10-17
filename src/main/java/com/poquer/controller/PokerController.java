@@ -3,6 +3,7 @@ package com.poquer.controller;
 import com.poquer.dto.request.CadastroJogadorRequest;
 import com.poquer.dto.response.CadastroJogadorResponse;
 import com.poquer.dto.response.ErrorResponse;
+import com.poquer.dto.response.EntradaPartidaResponse;
 import com.poquer.dto.response.PartidaAbertaResponse;
 import com.poquer.service.JogadorService;
 import com.poquer.service.PartidaService;
@@ -18,8 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -47,6 +50,33 @@ public class PokerController {
     @GetMapping("/partidasAbertas")
     public ResponseEntity<List<PartidaAbertaResponse>> listarPartidasAbertas() {
         return ResponseEntity.ok(partidaService.listarPartidasAbertas());
+    }
+
+    @Operation(
+            summary = "US10 - Entrada em uma partida",
+            description = "Permite que um jogador entre em uma partida aberta com vagas disponíveis."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Jogador entrou na partida com sucesso",
+            content = @Content(schema = @Schema(implementation = EntradaPartidaResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Parâmetros inválidos, mesa cheia, partida indisponível ou jogador já participante",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Partida ou jogador não encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @PostMapping("/{idPartida}/entrar")
+    public ResponseEntity<EntradaPartidaResponse> entrarPartida(
+            @PathVariable Long idPartida, @RequestParam Long idJogador) {
+
+        EntradaPartidaResponse response = partidaService.entrar(idPartida, idJogador);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(
