@@ -2,6 +2,7 @@ package com.poquer.service;
 
 import com.poquer.dto.response.PartidaAbertaResponse;
 import com.poquer.dto.response.EntradaPartidaResponse;
+import com.poquer.dto.response.InicioPartidaResponse;
 import com.poquer.exception.BusinessException;
 import com.poquer.exception.RecursoNaoEncontradoException;
 import com.poquer.model.Jogador;
@@ -34,7 +35,7 @@ public class PartidaService {
             throw new BusinessException("A partida não está aberta para entrada de jogadores.");
         }
 
-        if (partida.getJogadores().stream().anyMatch(presente -> presente.getId().equals(idJogador))) {
+        if (partida.isJogadorParticipando(idJogador)) {
             throw new BusinessException("O jogador já está participando desta partida.");
         }
 
@@ -47,6 +48,37 @@ public class PartidaService {
 
         return new EntradaPartidaResponse(
                 true, "Jogador entrou na partida com sucesso.", idPartida, idJogador);
+    }
+
+    @Transactional
+    public InicioPartidaResponse iniciar(Long idPartida, Long idJogador) {
+        Partida partida = partidaRepository.buscarPorIdComBloqueio(idPartida)
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        String.format("Partida com id %d não foi encontrada.", idPartida)));
+
+        if (idJogador != null) {
+            Jogador jogador = jogadorService.buscarPorId(idJogador);
+            if (!partida.isJogadorParticipando(jogador.getId())) {
+                throw new BusinessException("O jogador informado não está participando desta partida.");
+            }
+        }
+
+        partida.iniciar();
+        partidaRepository.save(partida);
+
+        return new InicioPartidaResponse(
+                true,
+                "Partida iniciada com sucesso.",
+                partida.getId(),
+                partida.getStatus(),
+                partida.getNumeroJogadoresPresentes(),
+                partida.getDataInicio()
+        );
+    }
+
+    @Transactional
+    public InicioPartidaResponse iniciar(Long idPartida) {
+        return iniciar(idPartida, null);
     }
 
     @Transactional(readOnly = true)

@@ -4,6 +4,7 @@ import com.poquer.dto.request.CadastroJogadorRequest;
 import com.poquer.dto.response.CadastroJogadorResponse;
 import com.poquer.dto.response.ErrorResponse;
 import com.poquer.dto.response.EntradaPartidaResponse;
+import com.poquer.dto.response.InicioPartidaResponse;
 import com.poquer.dto.response.PartidaAbertaResponse;
 import com.poquer.service.JogadorService;
 import com.poquer.service.PartidaService;
@@ -76,6 +77,34 @@ public class PokerController {
             @PathVariable Long idPartida, @RequestParam Long idJogador) {
 
         EntradaPartidaResponse response = partidaService.entrar(idPartida, idJogador);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "US12 - Início de uma partida",
+            description = "Permite iniciar uma partida aberta quando houver jogadores suficientes para o jogo começar (mínimo de 2 participantes)."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Partida iniciada com sucesso",
+            content = @Content(schema = @Schema(implementation = InicioPartidaResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Número insuficiente de jogadores, partida já em andamento, finalizada ou jogador não participante",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Partida ou jogador não encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @PostMapping("/{idPartida}/iniciar")
+    public ResponseEntity<InicioPartidaResponse> iniciarPartida(
+            @PathVariable Long idPartida,
+            @RequestParam(required = false) Long idJogador) {
+
+        InicioPartidaResponse response = partidaService.iniciar(idPartida, idJogador);
         return ResponseEntity.ok(response);
     }
 
