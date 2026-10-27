@@ -3,6 +3,7 @@ package com.poquer.controller;
 import com.poquer.dto.request.CadastroJogadorRequest;
 import com.poquer.dto.response.CadastroJogadorResponse;
 import com.poquer.dto.response.ErrorResponse;
+import com.poquer.dto.response.DistribuicaoCartasResponse;
 import com.poquer.dto.response.EntradaPartidaResponse;
 import com.poquer.dto.response.InicioPartidaResponse;
 import com.poquer.dto.response.PartidaAbertaResponse;
@@ -105,6 +106,33 @@ public class PokerController {
             @RequestParam(required = false) Long idJogador) {
 
         InicioPartidaResponse response = partidaService.iniciar(idPartida, idJogador);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "US13 - Distribuição de cartas",
+            description = "Distribui aleatoriamente 2 cartas do baralho para cada jogador participante da partida em andamento para iniciar uma nova rodada."
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Cartas distribuídas com sucesso para todos os jogadores",
+            content = @Content(schema = @Schema(implementation = DistribuicaoCartasResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Partida não iniciada, finalizada ou com número insuficiente de jogadores",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Partida não encontrada",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @PostMapping("/{idPartida}/distribuirCartas")
+    public ResponseEntity<DistribuicaoCartasResponse> distribuirCartas(
+            @PathVariable Long idPartida) {
+
+        DistribuicaoCartasResponse response = partidaService.distribuirCartas(idPartida);
         return ResponseEntity.ok(response);
     }
 
