@@ -33,6 +33,10 @@ public class Baralho {
         return cartas.remove(cartas.size() - 1);
     }
 
+    public Carta retirarCarta() {
+        return comprarCarta();
+    }
+
     public int quantidadeCartasRestantes() {
         return cartas.size();
     }
