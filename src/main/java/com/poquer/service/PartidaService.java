@@ -1,5 +1,7 @@
 package com.poquer.service;
 
+import com.poquer.dto.request.CriacaoPartidaRequest;
+import com.poquer.dto.response.CriacaoPartidaResponse;
 import com.poquer.dto.response.CartaResponse;
 import com.poquer.dto.response.CartasJogadorResponse;
 import com.poquer.dto.response.DistribuicaoCartasResponse;
@@ -8,6 +10,7 @@ import com.poquer.dto.response.InicioPartidaResponse;
 import com.poquer.dto.response.PartidaAbertaResponse;
 import com.poquer.exception.BusinessException;
 import com.poquer.exception.RecursoNaoEncontradoException;
+import com.poquer.factory.PartidaFactory;
 import com.poquer.model.Baralho;
 import com.poquer.model.Carta;
 import com.poquer.model.CartasJogador;
@@ -35,6 +38,21 @@ public class PartidaService {
         this.partidaRepository = partidaRepository;
         this.jogadorService = jogadorService;
         this.cartasJogadorRepository = cartasJogadorRepository;
+    }
+
+    @Transactional
+    public CriacaoPartidaResponse criar(CriacaoPartidaRequest request) {
+        Jogador criador = jogadorService.buscarPorId(request.idCriador());
+        Partida partida = PartidaFactory.criar(request.nome(), request.maxJogadores(), criador);
+        Partida partidaSalva = partidaRepository.save(partida);
+
+        return new CriacaoPartidaResponse(
+                partidaSalva.getId(),
+                partidaSalva.getNome(),
+                partidaSalva.getCriador().getId(),
+                partidaSalva.getStatus(),
+                partidaSalva.getNumeroJogadoresPresentes(),
+                partidaSalva.getMaxJogadores());
     }
 
     @Transactional
