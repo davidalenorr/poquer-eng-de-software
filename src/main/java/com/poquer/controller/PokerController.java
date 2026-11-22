@@ -1,6 +1,8 @@
 package com.poquer.controller;
 
 import com.poquer.dto.request.CadastroJogadorRequest;
+import com.poquer.dto.request.CriacaoPartidaRequest;
+import com.poquer.dto.response.CriacaoPartidaResponse;
 import com.poquer.dto.request.ApuracaoRodadaRequest;
 import com.poquer.dto.response.ApuracaoRodadaResponse;
 import com.poquer.dto.response.CadastroJogadorResponse;
@@ -44,6 +46,32 @@ public class PokerController {
         this.jogadorService = jogadorService;
         this.partidaService = partidaService;
         this.apuracaoRodadaService = apuracaoRodadaService;
+    }
+
+    @Operation(
+            summary = "US08 - Criação de uma partida",
+            description = "Cria uma mesa aberta e inclui o jogador criador como primeiro participante."
+    )
+    @ApiResponse(
+            responseCode = "201",
+            description = "Partida criada com sucesso",
+            content = @Content(schema = @Schema(implementation = CriacaoPartidaResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "400",
+            description = "Nome, identificador do criador ou capacidade inválidos",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @ApiResponse(
+            responseCode = "404",
+            description = "Jogador criador não encontrado",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @PostMapping("/partidas")
+    public ResponseEntity<CriacaoPartidaResponse> criarPartida(
+            @Valid @RequestBody CriacaoPartidaRequest request) {
+        CriacaoPartidaResponse response = partidaService.criar(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(
