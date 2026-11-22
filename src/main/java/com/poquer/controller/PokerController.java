@@ -1,6 +1,8 @@
 package com.poquer.controller;
 
 import com.poquer.dto.request.CadastroJogadorRequest;
+import com.poquer.dto.request.ApuracaoRodadaRequest;
+import com.poquer.dto.response.ApuracaoRodadaResponse;
 import com.poquer.dto.response.CadastroJogadorResponse;
 import com.poquer.dto.response.ErrorResponse;
 import com.poquer.dto.response.DistribuicaoCartasResponse;
@@ -9,6 +11,7 @@ import com.poquer.dto.response.InicioPartidaResponse;
 import com.poquer.dto.response.PartidaAbertaResponse;
 import com.poquer.service.JogadorService;
 import com.poquer.service.PartidaService;
+import com.poquer.service.ApuracaoRodadaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -34,10 +37,29 @@ public class PokerController {
 
     private final JogadorService jogadorService;
     private final PartidaService partidaService;
+    private final ApuracaoRodadaService apuracaoRodadaService;
 
-    public PokerController(JogadorService jogadorService, PartidaService partidaService) {
+    public PokerController(JogadorService jogadorService, PartidaService partidaService,
+            ApuracaoRodadaService apuracaoRodadaService) {
         this.jogadorService = jogadorService;
         this.partidaService = partidaService;
+        this.apuracaoRodadaService = apuracaoRodadaService;
+    }
+
+    @Operation(
+            summary = "US27, US28 e US29 - Apuração da rodada com Strategy",
+            description = "Avalia as melhores cinco cartas de cada jogador entre suas duas cartas distribuídas e as cinco comunitárias informadas. Retorna pontuações e todos os vencedores, sem movimentar fichas."
+    )
+    @ApiResponse(responseCode = "200", description = "Rodada apurada com sucesso",
+            content = @Content(schema = @Schema(implementation = ApuracaoRodadaResponse.class)))
+    @ApiResponse(responseCode = "400", description = "Cartas inválidas, distribuição incompleta ou partida fora de andamento",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Partida não encontrada",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @PostMapping("/{idPartida}/apurarRodada")
+    public ResponseEntity<ApuracaoRodadaResponse> apurarRodada(
+            @PathVariable Long idPartida, @Valid @RequestBody ApuracaoRodadaRequest request) {
+        return ResponseEntity.ok(apuracaoRodadaService.apurar(idPartida, request));
     }
 
     @Operation(
